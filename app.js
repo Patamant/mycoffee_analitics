@@ -29,9 +29,9 @@
     const f = S.data.fuente || {};
     const pi = periodoInfo();
     $('#sync-detail').textContent = isMes() ? `${pi.etiqueta}: ${fmtDate(pi.desde)} – ${fmtDate(pi.hasta)}` : `Período: ${fmtDate(f.fecha_inicio)} – ${fmtDate(f.fecha_corte)}`;
-    $('#foot-source').textContent = `hoja "${f.hoja || '—'}" · ${FMT.f('int', f.filas_validas)} filas válidas · última actualización ${f.actualizado === 'demo' ? '(demostración)' : fmtDate(f.actualizado)}`;
+    $('#foot-source').textContent = `última actualización ${f.actualizado === 'demo' ? '(demostración)' : fmtDate(f.actualizado)}`;
     if (S.mode === 'demo') setStatus('demo', 'Datos de demostración');
-    else setStatus('live', 'Google Sheets · ' + (f.actualizado ? fmtDate(f.actualizado) : 'conectado'));
+    else setStatus('live', 'Google Data Review · ' + (f.actualizado ? fmtDate(f.actualizado) : 'conectado'));
   }
 
   /* ---------- toast ---------- */
@@ -384,7 +384,8 @@
       S.data = r.data; S.mode = r.mode;
       try { if (r.mode === 'live') localStorage.setItem(CACHE_KEY, JSON.stringify({data: r.data})); } catch (e) { /* almacenamiento no disponible */ }
       renderAll();
-      if (r.mode === 'demo') toast('Mostrando datos de demostración. Configure la URL de la API para conectar Google Sheets.', 'info');
+      if (window.FINAV_CONFIG_ERROR) { setStatus('error', 'Error en config.js'); toast('No se pudo leer config.js: revise que el archivo exista y que no tenga errores de escritura (comillas, comas). Se muestran datos de demostración.', 'error'); }
+      else if (r.mode === 'demo') toast('Mostrando datos de demostración. Configure la URL de la API para conectar Google Sheets.', 'info');
     } catch (err) {
       loadingCharts(false);
       setStatus('error', 'Sin conexión');
