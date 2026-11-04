@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tablero de Ventas · Maíz &amp; Yuca | FINAV</title>
+  <meta name="description" content="Tablero de gestión de ventas de Maíz & Yuca Cafetería, preparado por FINAV Financial Advisor.">
+  <meta name="theme-color" content="#002858">
+  <link rel="icon" type="image/png" href="assets/img/finav-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div class="progress" id="progress" hidden><span></span></div>
+
+  <!-- ============ ENCABEZADO ============ -->
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <img class="logo-finav" src="assets/img/finav-logo.png" alt="FINAV Financial Advisor" width="74" height="64">
+        <span class="brand-sep" aria-hidden="true"></span>
+        <img class="logo-client" src="assets/img/maiz-yuca-logo.jpg" alt="Maíz &amp; Yuca Cafetería" width="52" height="52">
+        <div class="brand-text">
+          <span class="eyebrow">Maíz &amp; Yuca · Gestión comercial</span>
+          <h1>Tablero de ventas</h1>
+        </div>
+      </div>
+      <div class="sync">
+        <div class="sync-meta">
+          <span class="status-pill" id="status-pill" data-state="loading"><span class="dot"></span><span id="status-text">Cargando…</span></span>
+          <span class="sync-detail" id="sync-detail">Período: —</span>
+        </div>
+        <button class="btn-refresh" id="btn-refresh" type="button" aria-describedby="sync-detail">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="btn-label">Actualizar</span>
+        </button>
+      </div>
+    </div>
+    <nav class="tabs-bar" aria-label="Secciones del tablero">
+      <div class="wrap">
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" id="tab-resumen" aria-controls="p-resumen" aria-selected="true" data-tab="resumen">Resumen</button>
+          <button class="tab" role="tab" id="tab-cuando" aria-controls="p-cuando" aria-selected="false" tabindex="-1" data-tab="cuando">Cuándo se vende</button>
+          <button class="tab" role="tab" id="tab-que" aria-controls="p-que" aria-selected="false" tabindex="-1" data-tab="que">Qué se vende</button>
+          <button class="tab" role="tab" id="tab-clientes" aria-controls="p-clientes" aria-selected="false" tabindex="-1" data-tab="clientes">Clientes y equipo</button>
+          <button class="tab" role="tab" id="tab-plan" aria-controls="p-plan" aria-selected="false" tabindex="-1" data-tab="plan">Plan de acción</button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="wrap main" id="main">
+
+    <!-- ============ RESUMEN ============ -->
+    <section class="page" id="p-resumen" role="tabpanel" aria-labelledby="tab-resumen">
+      <div class="page-head">
+        <h2>Resumen del período</h2>
+        <p class="lede" id="lede">—</p>
+      </div>
+
+      <div class="kpis">
+        <article class="kpi kpi-lead">
+          <span class="kpi-label">Ventas netas</span>
+          <span class="kpi-value" data-k="ventas_netas" data-f="money0">—</span>
+          <span class="kpi-foot">Sin anulaciones ni notas de crédito</span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Venta promedio por día</span>
+          <span class="kpi-value" data-k="venta_dia" data-f="money0">—</span>
+          <span class="kpi-foot"><span data-k="dias_operados" data-f="int">—</span> días operados</span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Ticket promedio</span>
+          <span class="kpi-value" data-k="ticket_prom" data-f="money">—</span>
+          <span class="kpi-foot"><span data-t="mes_actual">—</span>: <span data-k="ticket_ult_mes" data-f="money">—</span> <span class="delta" data-k="delta_ticket_ult_mes" data-f="delta">—</span></span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Artículos por ticket</span>
+          <span class="kpi-value" data-k="items_ticket" data-f="dec1">—</span>
+          <span class="kpi-foot"><span data-k="tickets" data-f="int">—</span> tickets</span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Tickets con bebida</span>
+          <span class="kpi-value" data-k="pct_tickets_bebida" data-f="pct">—</span>
+          <span class="kpi-foot">Con <span data-k="ticket_con_bebida" data-f="money">—</span> · sin <span data-k="ticket_sin_bebida" data-f="money">—</span></span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Clientes de una sola visita</span>
+          <span class="kpi-value" data-k="pct_clientes_una_visita" data-f="pct">—</span>
+          <span class="kpi-foot">De <span data-k="clientes_identificados" data-f="int">—</span> clientes identificados</span>
+        </article>
+      </div>
+
+      <div class="grid-2-1">
+        <article class="card">
+          <header class="card-head">
+            <div>
+              <h3>Ventas por mes</h3>
+              <p class="note">Ventas netas mensuales. La línea dorada es el promedio mensual. <span data-t="mes_actual">—</span> frente al promedio: <b class="delta" data-k="delta_ult_mes" data-f="delta">—</b>.</p>
+            </div>
+          </header>
+          <div class="chart" id="ch-mes"></div>
+        </article>
+        <article class="card insights">
+          <header class="card-head"><h3>Lectura ejecutiva</h3></header>
+          <ul class="insight-list" id="insights"><li class="sk-line"></li><li class="sk-line"></li><li class="sk-line"></li></ul>
+        </article>
+      </div>
+
+      <div class="grid-2">
+        <article class="card">
+          <header class="card-head"><div><h3>Ticket promedio por mes</h3><p class="note">Venta neta dividida entre los tickets del mes. En rojo, el mes más bajo.</p></div></header>
+          <div class="chart" id="ch-ticket"></div>
+        </article>
+        <article class="card">
+          <header class="card-head"><div><h3>Clientes nuevos por mes</h3><p class="note">Clientes con cédula o RUC que compran por primera vez en el período.</p></div></header>
+          <div class="chart" id="ch-nuevos"></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ CUÁNDO SE VENDE ============ -->
+    <section class="page" id="p-cuando" role="tabpanel" aria-labelledby="tab-cuando" hidden>
+      <div class="page-head">
+        <h2>Cuándo se vende</h2>
+        <p class="lede">Días y horas en que entra la venta, para decidir promociones, turnos y horario.</p>
+      </div>
+      <div class="kpis kpis-3">
+        <article class="kpi">
+          <span class="kpi-label">Venta por día · lunes a jueves</span>
+          <span class="kpi-value" data-k="venta_dia_lun_jue" data-f="money0">—</span>
+          <span class="kpi-foot">Promedio por día operado</span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Venta por día · sábado y domingo</span>
+          <span class="kpi-value" data-k="venta_dia_sab_dom" data-f="money0">—</span>
+          <span class="kpi-foot"><span data-k="pct_finde" data-f="pct">—</span> de la venta total</span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Venta desde las 13h</span>
+          <span class="kpi-value" data-k="pct_tarde" data-f="pct">—</span>
+          <span class="kpi-foot">Antes de las 12h: <span data-k="pct_manana" data-f="pct">—</span></span>
+        </article>
+      </div>
+
+      <article class="card">
+        <header class="card-head"><div><h3>Mapa de calor: venta promedio por día y hora</h3><p class="note">Venta promedio de cada hora por día operado de ese día de la semana. Más oscuro es más venta.</p></div>
+          <div class="legend-ramp" aria-hidden="true"><span>Menos</span><i></i><span>Más</span></div></header>
+        <div class="chart chart-tall" id="ch-heat"></div>
+      </article>
+
+      <div class="grid-2">
+        <article class="card">
+          <header class="card-head"><div><h3>Venta promedio por día de la semana</h3><p class="note">Venta del día dividida entre los días operados. Fin de semana en dorado.</p></div></header>
+          <div class="chart" id="ch-dow"></div>
+        </article>
+        <article class="card">
+          <header class="card-head"><div><h3>Participación en la venta por hora</h3><p class="note">Hora de emisión de la factura. En azul, las horas pico (8h a 11h).</p></div></header>
+          <div class="chart" id="ch-hora"></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ QUÉ SE VENDE ============ -->
+    <section class="page" id="p-que" role="tabpanel" aria-labelledby="tab-que" hidden>
+      <div class="page-head">
+        <h2>Qué se vende</h2>
+        <p class="lede">Mezcla de líneas y productos, concentración de la venta y disciplina de precios.</p>
+      </div>
+      <div class="kpis kpis-4">
+        <article class="kpi">
+          <span class="kpi-label">Productos clase A</span>
+          <span class="kpi-value" data-k="productos_A" data-f="int">—</span>
+          <span class="kpi-foot">Hacen el 80% de la venta, de <span data-k="productos" data-f="int">—</span></span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Productos clase C</span>
+          <span class="kpi-value" data-k="productos_C" data-f="int">—</span>
+          <span class="kpi-foot">Venden <span data-k="ventas_C" data-f="money0">—</span> en el período</span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Productos con 3 o más precios</span>
+          <span class="kpi-value" data-k="productos_multiprecio" data-f="int">—</span>
+          <span class="kpi-foot">Mismo artículo, precios distintos</span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Tickets para llevar</span>
+          <span class="kpi-value" data-k="pct_tickets_llevar" data-f="pct">—</span>
+          <span class="kpi-foot">Incluyen desechable</span>
+        </article>
+      </div>
+
+      <article class="card">
+        <header class="card-head"><div><h3>Líneas de producto: venta mensual promedio</h3>
+          <p class="note"><span class="key key-open"></span><span data-t="periodo_previo">—</span> frente a <span class="key key-fill"></span><span data-t="periodo_reciente">—</span>. Ordenadas por la venta reciente.</p></div></header>
+        <div class="chart chart-tall" id="ch-lineas"></div>
+      </article>
+
+      <article class="card">
+        <header class="card-head card-head-tools">
+          <div><h3>Productos: ventas, clasificación ABC y tendencia</h3>
+            <p class="note">ABC por venta acumulada (A hasta 80%, B hasta 95%, C el resto). Tendencia: <span data-t="periodo_reciente">—</span> frente a <span data-t="periodo_previo">—</span>. Clic en un encabezado para ordenar.</p></div>
+          <div class="tools">
+            <div class="seg" role="group" aria-label="Filtrar por clase">
+              <button type="button" class="seg-btn" data-abc="" aria-pressed="true">Todas</button>
+              <button type="button" class="seg-btn" data-abc="A" aria-pressed="false">A</button>
+              <button type="button" class="seg-btn" data-abc="B" aria-pressed="false">B</button>
+              <button type="button" class="seg-btn" data-abc="C" aria-pressed="false">C</button>
+            </div>
+            <label class="search"><span class="sr-only">Buscar producto o línea</span>
+              <input id="prod-q" type="search" placeholder="Buscar producto o línea" autocomplete="off"></label>
+            <button type="button" class="btn-ghost" id="prod-csv">Descargar CSV</button>
+          </div>
+        </header>
+        <div class="table-box">
+          <table class="tbl" id="tbl-prod">
+            <thead><tr>
+              <th data-sort="producto" aria-sort="none"><button type="button">Producto</button></th>
+              <th data-sort="linea" aria-sort="none"><button type="button">Línea</button></th>
+              <th data-sort="abc" aria-sort="none"><button type="button">ABC</button></th>
+              <th class="num" data-sort="ventas" aria-sort="descending"><button type="button">Ventas</button></th>
+              <th class="num col-opt" data-sort="unidades" aria-sort="none"><button type="button">Unidades</button></th>
+              <th class="num col-opt" data-sort="precio_prom" aria-sort="none"><button type="button">Precio prom.</button></th>
+              <th class="num" data-sort="participacion" aria-sort="none"><button type="button">% venta</button></th>
+              <th class="num" data-sort="tendencia" aria-sort="none"><button type="button">Tendencia</button></th>
+              <th class="num col-opt" data-sort="precios_distintos" aria-sort="none"><button type="button">Precios</button></th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="table-foot" id="prod-count">—</p>
+      </article>
+    </section>
+
+    <!-- ============ CLIENTES Y EQUIPO ============ -->
+    <section class="page" id="p-clientes" role="tabpanel" aria-labelledby="tab-clientes" hidden>
+      <div class="page-head">
+        <h2>Clientes y equipo</h2>
+        <p class="lede">Recompra, captación de clientes, desempeño en caja y control de anulaciones.</p>
+      </div>
+      <div class="kpis kpis-4">
+        <article class="kpi">
+          <span class="kpi-label">Tickets a consumidor final</span>
+          <span class="kpi-value" data-k="pct_consumidor_final" data-f="pct">—</span>
+          <span class="kpi-foot">Ventas sin dato del cliente</span>
+        </article>
+        <article class="kpi kpi-alert">
+          <span class="kpi-label">Frecuentes inactivos</span>
+          <span class="kpi-value" data-k="frecuentes_inactivos" data-f="int">—</span>
+          <span class="kpi-foot">De <span data-k="frecuentes" data-f="int">—</span> con 4+ visitas, sin venir en 60 días</span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Clientes nuevos</span>
+          <span class="kpi-value"><span data-k="nuevos_primer_mes" data-f="int">—</span> <span class="arrow">→</span> <span data-k="nuevos_ult_mes" data-f="int">—</span></span>
+          <span class="kpi-foot"><span data-t="mes_primero">—</span> frente a <span data-t="mes_actual">—</span></span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Anulaciones y notas de crédito</span>
+          <span class="kpi-value" data-k="anulado_valor" data-f="money0">—</span>
+          <span class="kpi-foot"><span data-k="anulado_pct" data-f="pct">—</span> de la venta neta</span>
+        </article>
+      </div>
+
+      <article class="card">
+        <header class="card-head"><div><h3>Clientes por frecuencia de visita</h3><p class="note">Clientes identificados con cédula o RUC. La barra compara su peso en clientes y en ventas.</p></div></header>
+        <div class="table-box auto">
+          <table class="tbl" id="tbl-cli">
+            <thead><tr>
+              <th>Segmento</th><th class="num">Clientes</th><th class="col-bar">Peso en clientes / ventas</th><th class="num">Ventas</th>
+              <th class="num">Venta por cliente</th><th class="num col-opt">Sin visita en 60 días</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </article>
+
+      <div class="grid-2">
+        <article class="card">
+          <header class="card-head"><div><h3>Desempeño por cajero</h3><p class="note">Quien trabaja más el fin de semana tiene tickets más altos por el día. Para comparar venta sugestiva, use el % con bebida.</p></div></header>
+          <div class="table-box auto">
+            <table class="tbl" id="tbl-usu">
+              <thead><tr><th>Usuario</th><th class="num">Ventas</th><th class="num col-opt">Tickets</th><th class="num">Ticket prom.</th><th class="num">% con bebida</th><th class="num col-opt">% fin de semana</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </article>
+        <article class="card">
+          <header class="card-head"><div><h3>Anulaciones por motivo</h3><p class="note">Motivos agrupados a partir del texto registrado en caja.</p></div></header>
+          <div class="table-box auto">
+            <table class="tbl" id="tbl-anu">
+              <thead><tr><th>Motivo</th><th class="num">Valor</th><th class="num">Documentos</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+    </section>
+    <!-- ============ PLAN DE ACCIÓN ============ -->
+    <section class="page" id="p-plan" role="tabpanel" aria-labelledby="tab-plan" hidden>
+      <div class="print-head" aria-hidden="true">
+        <img src="assets/img/finav-logo.png" alt="" class="ph-finav">
+        <img src="assets/img/maiz-yuca-logo.jpg" alt="" class="ph-client">
+        <div class="ph-text">
+          <span class="eyebrow">Maíz &amp; Yuca · Gestión comercial</span>
+          <strong>Plan de acción comercial</strong>
+          <span class="ph-meta">Período analizado: <span data-src="periodo">—</span> · Emitido: <span data-src="emitido">—</span></span>
+        </div>
+      </div>
+
+      <div class="page-head page-head-tools">
+        <div>
+          <h2>Plan de acción</h2>
+          <p class="lede">Acciones priorizadas a partir de los indicadores del período, con su impacto estimado y las metas de seguimiento semanal.</p>
+        </div>
+        <button type="button" class="btn-print" id="btn-print">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3h10v6M7 18H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          <span>Imprimir plan</span>
+        </button>
+      </div>
+
+      <div class="kpis kpis-3">
+        <article class="kpi kpi-lead">
+          <span class="kpi-label">Venta adicional estimada</span>
+          <span class="kpi-value" id="plan-total">—</span>
+          <span class="kpi-foot">por mes, con los supuestos de abajo</span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Sobre la venta mensual promedio</span>
+          <span class="kpi-value" id="plan-pct">—</span>
+          <span class="kpi-foot">Promedio actual: <span data-k="prom_mensual" data-f="money0">—</span></span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Venta anual adicional</span>
+          <span class="kpi-value" id="plan-anual">—</span>
+          <span class="kpi-foot">Si el escenario se sostiene 12 meses</span>
+        </article>
+      </div>
+
+      <article class="card">
+        <header class="card-head"><div><h3>Escenario de venta adicional por palanca</h3>
+          <p class="note">Estimación conservadora. Puede cambiar los supuestos en pantalla: el impacto y las metas se recalculan y así se imprimen.</p></div></header>
+        <div class="table-box auto">
+          <table class="tbl tbl-plan" id="tbl-esc">
+            <thead><tr><th>Palanca</th><th>Supuesto</th><th class="num">Base actual</th><th class="num">Venta adicional / mes</th><th class="col-bar col-opt">Peso</th></tr></thead>
+            <tbody>
+              <tr data-row="semana">
+                <td class="strong">Llenar los días de semana</td>
+                <td>Venta diaria de lunes a jueves sube <label class="inp"><input type="number" id="s-semana" min="0" max="100" step="1" value="15" aria-label="Aumento de venta diaria lunes a jueves, en porcentaje">%</label></td>
+                <td class="num" data-base>—</td><td class="num strong" data-imp>—</td><td class="col-bar col-opt"><span class="pbar" data-bar></span></td>
+              </tr>
+              <tr data-row="frecuentes">
+                <td class="strong">Recuperar clientes frecuentes</td>
+                <td><label class="inp"><input type="number" id="s-retorno" min="0" max="100" step="5" value="50" aria-label="Porcentaje de frecuentes inactivos que vuelve">%</label> de los frecuentes inactivos vuelve 1 vez al mes</td>
+                <td class="num" data-base>—</td><td class="num strong" data-imp>—</td><td class="col-bar col-opt"><span class="pbar" data-bar></span></td>
+              </tr>
+              <tr data-row="tarde">
+                <td class="strong">Activar la tarde (desde 13h)</td>
+                <td>La venta de la tarde sube <label class="inp"><input type="number" id="s-tarde" min="0" max="200" step="5" value="20" aria-label="Aumento de la venta de la tarde, en porcentaje">%</label> con una oferta de merienda</td>
+                <td class="num" data-base>—</td><td class="num strong" data-imp>—</td><td class="col-bar col-opt"><span class="pbar" data-bar></span></td>
+              </tr>
+              <tr data-row="bebida">
+                <td class="strong">Una bebida en cada ticket</td>
+                <td><label class="inp"><input type="number" id="s-conv" min="0" max="100" step="5" value="25" aria-label="Porcentaje de tickets sin bebida que suma una">%</label> de los tickets sin bebida suma una de <label class="inp">$<input type="number" id="s-precio" min="0" step="0.05" value="1.80" aria-label="Precio promedio de la bebida en dólares"></label></td>
+                <td class="num" data-base>—</td><td class="num strong" data-imp>—</td><td class="col-bar col-opt"><span class="pbar" data-bar></span></td>
+              </tr>
+            </tbody>
+            <tfoot><tr><td class="strong" colspan="3">Total estimado por mes</td><td class="num strong" id="esc-total">—</td><td class="col-opt"></td></tr></tfoot>
+          </table>
+        </div>
+        <p class="table-foot">Base actual: venta diaria lunes–jueves, frecuentes inactivos, venta mensual desde las 13h y tickets sin bebida por mes, respectivamente.</p>
+      </article>
+
+      <div class="sec">
+        <h3 class="sec-title">Acciones priorizadas</h3>
+        <div class="recs">
+          <article class="rec">
+            <span class="tag hi">Prioridad 1 · esta semana</span>
+            <h4>Llenar los días de semana</h4>
+            <p>De lunes a jueves se vende <b data-k="venta_dia_lun_jue" data-f="money0">—</b> por día, frente a <b data-k="venta_dia_sab_dom" data-f="money0">—</b> el sábado y domingo. El local ya paga la apertura esos días.</p>
+            <ul>
+              <li>Lanzar un "desayuno manaba de semana" a precio fijo, con café incluido, de lunes a jueves.</li>
+              <li>Ofrecer pedidos anticipados y convenios a oficinas, colegios y negocios cercanos, con entrega a las 8h.</li>
+              <li>Medir cada lunes la venta por día de lunes a jueves frente a la línea base.</li>
+            </ul>
+            <div class="sign"><span>Responsable:</span><span>Fecha límite:</span></div>
+          </article>
+          <article class="rec">
+            <span class="tag hi">Prioridad 1 · esta semana</span>
+            <h4>Una bebida en cada ticket</h4>
+            <p>Solo <b data-k="pct_tickets_bebida" data-f="pct">—</b> de los tickets lleva bebida. Con bebida el ticket promedia <b data-k="ticket_con_bebida" data-f="money">—</b>; sin bebida, <b data-k="ticket_sin_bebida" data-f="money">—</b>.</p>
+            <ul>
+              <li>Guion obligatorio en caja: "¿Le acompaño con un café, jugo o yogurt?"</li>
+              <li>Destacar en el menú los combos que ya incluyen bebida, en especial el yogurt con pan de yuca.</li>
+              <li>Meta diaria de % de tickets con bebida por cajero, revisada al cierre.</li>
+            </ul>
+            <div class="sign"><span>Responsable:</span><span>Fecha límite:</span></div>
+          </article>
+          <article class="rec">
+            <span class="tag hi">Prioridad 1 · este mes</span>
+            <h4>Hacer volver a los clientes</h4>
+            <p><b data-k="pct_clientes_una_visita" data-f="pct">—</b> de los clientes compró una sola vez, <b data-k="frecuentes_inactivos" data-f="int">—</b> frecuentes no vuelven hace 60 días y los clientes nuevos pasaron de <b data-k="nuevos_primer_mes" data-f="int">—</b> en <span data-t="mes_primero">—</span> a <b data-k="nuevos_ult_mes" data-f="int">—</b> en <span data-t="mes_actual">—</span>.</p>
+            <ul>
+              <li>Contactar por WhatsApp a los frecuentes inactivos con una invitación personal (por ejemplo, café de cortesía).</li>
+              <li>Tarjeta de sellos: a la sexta visita, un antojo gratis.</li>
+              <li>Pedir teléfono o cédula en caja para bajar el <b data-k="pct_consumidor_final" data-f="pct">—</b> de tickets a consumidor final.</li>
+            </ul>
+            <div class="sign"><span>Responsable:</span><span>Fecha límite:</span></div>
+          </article>
+          <article class="rec">
+            <span class="tag md">Prioridad 2 · este mes</span>
+            <h4>Decidir qué hacer con la tarde</h4>
+            <p>Desde las 13h solo entra <b data-k="pct_tarde" data-f="pct">—</b> de la venta. O se crea un motivo de visita, o se ajustan horario y turnos para cuidar el costo.</p>
+            <ul>
+              <li>Probar 4 semanas una "merienda manaba" de 15h a 18h: pan de yuca, tortilla o bolón con café o yogurt.</li>
+              <li>Si la prueba no cubre el costo de abrir, reducir personal o cerrar antes de lunes a jueves.</li>
+            </ul>
+            <div class="sign"><span>Responsable:</span><span>Fecha límite:</span></div>
+          </article>
+          <article class="rec">
+            <span class="tag md">Prioridad 2 · este trimestre</span>
+            <h4>Concentrar el menú en lo que vende</h4>
+            <p><b data-k="productos_A" data-f="int">—</b> productos hacen el 80% de la venta, mientras <b data-k="productos_C" data-f="int">—</b> productos de clase C suman <b data-k="ventas_C" data-f="money0">—</b> en el período.</p>
+            <ul>
+              <li>Retirar o pasar a "bajo pedido" los productos C sin rol estratégico: simplifica cocina, inventario y mermas.</li>
+              <li>Dar visibilidad a los productos con tendencia positiva o nuevos (ver pestaña Qué se vende).</li>
+              <li>Revisar el margen de los combos que reemplazan ventas sueltas, como el pan de yuca.</li>
+            </ul>
+            <div class="sign"><span>Responsable:</span><span>Fecha límite:</span></div>
+          </article>
+          <article class="rec">
+            <span class="tag md">Prioridad 2 · este mes</span>
+            <h4>Ordenar precios y controles de caja</h4>
+            <p><b data-k="productos_multiprecio" data-f="int">—</b> productos se cobraron a 3 o más precios distintos. Las anulaciones suman <b data-k="anulado_valor" data-f="money0">—</b>, de los cuales <b data-k="anulado_pruebas" data-f="money0">—</b> son pruebas del sistema.</p>
+            <ul>
+              <li>Una lista de precios por canal (salón, para llevar, aplicaciones), sin precios editables en caja.</li>
+              <li>Anulación solo con clave del administrador y motivo de una lista cerrada; pruebas en un ambiente aparte.</li>
+              <li>Revisar por qué el ticket de <span data-t="mes_ticket_min">—</span> fue el más bajo del período.</li>
+            </ul>
+            <div class="sign"><span>Responsable:</span><span>Fecha límite:</span></div>
+          </article>
+        </div>
+      </div>
+
+      <article class="card card-break">
+        <header class="card-head"><div><h3>Seguimiento semanal</h3>
+          <p class="note">Línea base del período y meta derivada de los supuestos del escenario. Las columnas de semana se completan en la reunión de seguimiento.</p></div></header>
+        <div class="table-box auto">
+          <table class="tbl tbl-seg" id="tbl-seg">
+            <thead><tr><th>Indicador</th><th class="num">Línea base</th><th class="num">Meta</th><th class="wk">Sem. 1</th><th class="wk">Sem. 2</th><th class="wk">Sem. 3</th><th class="wk">Sem. 4</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </article>
+
+      <div class="print-sign" aria-hidden="true">
+        <div><span></span>Gerencia Maíz &amp; Yuca</div>
+        <div><span></span>FINAV Financial Advisor</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <span>Fuente: Google Sheets · <span id="foot-source">—</span></span>
+      <span>Preparado por <b>FINAV</b> Financial Advisor</span>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <div class="tooltip" id="tooltip" hidden></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/format.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/charts.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
