@@ -39,13 +39,19 @@
       </div>
     </div>
     <nav class="tabs-bar" aria-label="Secciones del tablero">
-      <div class="wrap">
+      <div class="wrap tabs-row">
         <div class="tabs" role="tablist">
           <button class="tab" role="tab" id="tab-resumen" aria-controls="p-resumen" aria-selected="true" data-tab="resumen">Resumen</button>
           <button class="tab" role="tab" id="tab-cuando" aria-controls="p-cuando" aria-selected="false" tabindex="-1" data-tab="cuando">Cuándo se vende</button>
           <button class="tab" role="tab" id="tab-que" aria-controls="p-que" aria-selected="false" tabindex="-1" data-tab="que">Qué se vende</button>
           <button class="tab" role="tab" id="tab-clientes" aria-controls="p-clientes" aria-selected="false" tabindex="-1" data-tab="clientes">Clientes y equipo</button>
           <button class="tab" role="tab" id="tab-plan" aria-controls="p-plan" aria-selected="false" tabindex="-1" data-tab="plan">Plan de acción</button>
+        </div>
+        <div class="period" role="group" aria-label="Período de análisis">
+          <label for="periodo" class="period-label">Período</label>
+          <button type="button" class="period-step" id="per-prev" aria-label="Mes anterior">‹</button>
+          <select id="periodo"><option value="TOTAL">Todo el período</option></select>
+          <button type="button" class="period-step" id="per-next" aria-label="Mes siguiente">›</button>
         </div>
       </div>
     </nav>
@@ -56,7 +62,7 @@
     <!-- ============ RESUMEN ============ -->
     <section class="page" id="p-resumen" role="tabpanel" aria-labelledby="tab-resumen">
       <div class="page-head">
-        <h2>Resumen del período</h2>
+        <h2>Resumen <span class="period-chip" data-period>—</span></h2>
         <p class="lede" id="lede">—</p>
       </div>
 
@@ -64,7 +70,8 @@
         <article class="kpi kpi-lead">
           <span class="kpi-label">Ventas netas</span>
           <span class="kpi-value" data-k="ventas_netas" data-f="money0">—</span>
-          <span class="kpi-foot">Sin anulaciones ni notas de crédito</span>
+          <span class="kpi-foot" data-mode="total mes0">Sin anulaciones ni notas de crédito</span>
+          <span class="kpi-foot" data-mode="mes" hidden>Frente a <span data-t="mes_anterior">—</span>: <span class="delta" data-k="delta_vs_anterior" data-f="delta">—</span></span>
         </article>
         <article class="kpi">
           <span class="kpi-label">Venta promedio por día</span>
@@ -74,7 +81,9 @@
         <article class="kpi">
           <span class="kpi-label">Ticket promedio</span>
           <span class="kpi-value" data-k="ticket_prom" data-f="money">—</span>
-          <span class="kpi-foot"><span data-t="mes_actual">—</span>: <span data-k="ticket_ult_mes" data-f="money">—</span> <span class="delta" data-k="delta_ticket_ult_mes" data-f="delta">—</span></span>
+          <span class="kpi-foot" data-mode="total"><span data-t="mes_ref">—</span>: <span data-k="ticket_ref_mes" data-f="money">—</span> <span class="delta" data-k="delta_ticket_ref_vs_prom" data-f="delta">—</span></span>
+          <span class="kpi-foot" data-mode="mes" hidden><span data-t="mes_anterior">—</span>: <span data-k="ticket_mes_anterior" data-f="money">—</span> · <span class="delta" data-k="delta_ticket_vs_anterior" data-f="delta">—</span></span>
+          <span class="kpi-foot" data-mode="mes0" hidden>Frente al promedio: <span class="delta" data-k="delta_ticket_ref_vs_prom" data-f="delta">—</span></span>
         </article>
         <article class="kpi">
           <span class="kpi-label">Artículos por ticket</span>
@@ -97,8 +106,10 @@
         <article class="card">
           <header class="card-head">
             <div>
-              <h3>Ventas por mes</h3>
-              <p class="note">Ventas netas mensuales. La línea dorada es el promedio mensual. <span data-t="mes_actual">—</span> frente al promedio: <b class="delta" data-k="delta_ult_mes" data-f="delta">—</b>.</p>
+              <h3 data-mode="total">Ventas por mes</h3>
+              <h3 data-mode="mes mes0" hidden>Ventas por día · <span data-period>—</span></h3>
+              <p class="note" data-mode="total">Ventas netas mensuales. La línea dorada es el promedio mensual. <span data-t="mes_ref">—</span> frente al promedio: <b class="delta" data-k="delta_ref_vs_prom" data-f="delta">—</b>.</p>
+              <p class="note" data-mode="mes mes0" hidden>Ventas netas de cada día; sábados y domingos en azul claro. La línea dorada es el promedio diario del mes. Mes frente al promedio mensual: <b class="delta" data-k="delta_ref_vs_prom" data-f="delta">—</b>.</p>
             </div>
           </header>
           <div class="chart" id="ch-mes"></div>
@@ -111,11 +122,11 @@
 
       <div class="grid-2">
         <article class="card">
-          <header class="card-head"><div><h3>Ticket promedio por mes</h3><p class="note">Venta neta dividida entre los tickets del mes. En rojo, el mes más bajo.</p></div></header>
+          <header class="card-head"><div><h3>Ticket promedio por mes</h3><p class="note">Venta neta dividida entre los tickets del mes. En rojo, el mes más bajo; en dorado, el mes elegido.</p></div></header>
           <div class="chart" id="ch-ticket"></div>
         </article>
         <article class="card">
-          <header class="card-head"><div><h3>Clientes nuevos por mes</h3><p class="note">Clientes con cédula o RUC que compran por primera vez en el período.</p></div></header>
+          <header class="card-head"><div><h3>Clientes nuevos por mes</h3><p class="note">Clientes con cédula o RUC que compran por primera vez. Serie completa; al elegir un mes, ese mes queda resaltado.</p></div></header>
           <div class="chart" id="ch-nuevos"></div>
         </article>
       </div>
@@ -124,7 +135,7 @@
     <!-- ============ CUÁNDO SE VENDE ============ -->
     <section class="page" id="p-cuando" role="tabpanel" aria-labelledby="tab-cuando" hidden>
       <div class="page-head">
-        <h2>Cuándo se vende</h2>
+        <h2>Cuándo se vende <span class="period-chip" data-period>—</span></h2>
         <p class="lede">Días y horas en que entra la venta, para decidir promociones, turnos y horario.</p>
       </div>
       <div class="kpis kpis-3">
@@ -166,7 +177,7 @@
     <!-- ============ QUÉ SE VENDE ============ -->
     <section class="page" id="p-que" role="tabpanel" aria-labelledby="tab-que" hidden>
       <div class="page-head">
-        <h2>Qué se vende</h2>
+        <h2>Qué se vende <span class="period-chip" data-period>—</span></h2>
         <p class="lede">Mezcla de líneas y productos, concentración de la venta y disciplina de precios.</p>
       </div>
       <div class="kpis kpis-4">
@@ -193,15 +204,19 @@
       </div>
 
       <article class="card">
-        <header class="card-head"><div><h3>Líneas de producto: venta mensual promedio</h3>
-          <p class="note"><span class="key key-open"></span><span data-t="periodo_previo">—</span> frente a <span class="key key-fill"></span><span data-t="periodo_reciente">—</span>. Ordenadas por la venta reciente.</p></div></header>
+        <header class="card-head"><div>
+          <h3 data-mode="total mes">Líneas de producto: venta mensual frente al período anterior</h3>
+          <h3 data-mode="mes0" hidden>Líneas de producto: ventas del mes</h3>
+          <p class="note" data-mode="total"><span class="key key-open"></span>Promedio mensual <span data-t="periodo_previo">—</span> frente a <span class="key key-fill"></span>promedio <span data-t="periodo_reciente">—</span>. Ordenadas por la venta reciente.</p>
+          <p class="note" data-mode="mes" hidden><span class="key key-open"></span><span data-t="periodo_previo">—</span> (promedio mensual de los meses anteriores) frente a <span class="key key-fill"></span>venta de <span data-t="periodo_reciente">—</span>.</p>
+          <p class="note" data-mode="mes0" hidden>Primer mes cargado: no hay meses anteriores para comparar.</p></div></header>
         <div class="chart chart-tall" id="ch-lineas"></div>
       </article>
 
       <article class="card">
         <header class="card-head card-head-tools">
           <div><h3>Productos: ventas, clasificación ABC y tendencia</h3>
-            <p class="note">ABC por venta acumulada (A hasta 80%, B hasta 95%, C el resto). Tendencia: <span data-t="periodo_reciente">—</span> frente a <span data-t="periodo_previo">—</span>. Clic en un encabezado para ordenar.</p></div>
+            <p class="note">ABC por venta acumulada (A hasta 80%, B hasta 95%, C el resto). <span data-mode="total mes">Tendencia: <span data-t="periodo_reciente">—</span> frente a <span data-t="periodo_previo">—</span>.</span><span data-mode="mes0" hidden>Sin tendencia en el primer mes.</span> Clic en un encabezado para ordenar.</p></div>
           <div class="tools">
             <div class="seg" role="group" aria-label="Filtrar por clase">
               <button type="button" class="seg-btn" data-abc="" aria-pressed="true">Todas</button>
@@ -237,7 +252,7 @@
     <!-- ============ CLIENTES Y EQUIPO ============ -->
     <section class="page" id="p-clientes" role="tabpanel" aria-labelledby="tab-clientes" hidden>
       <div class="page-head">
-        <h2>Clientes y equipo</h2>
+        <h2>Clientes y equipo <span class="period-chip" data-period>—</span></h2>
         <p class="lede">Recompra, captación de clientes, desempeño en caja y control de anulaciones.</p>
       </div>
       <div class="kpis kpis-4">
@@ -249,12 +264,15 @@
         <article class="kpi kpi-alert">
           <span class="kpi-label">Frecuentes inactivos</span>
           <span class="kpi-value" data-k="frecuentes_inactivos" data-f="int">—</span>
-          <span class="kpi-foot">De <span data-k="frecuentes" data-f="int">—</span> con 4+ visitas, sin venir en 60 días</span>
+          <span class="kpi-foot">De <span data-k="frecuentes" data-f="int">—</span> con 4+ visitas, sin venir en 60 días al cierre</span>
         </article>
         <article class="kpi">
           <span class="kpi-label">Clientes nuevos</span>
-          <span class="kpi-value"><span data-k="nuevos_primer_mes" data-f="int">—</span> <span class="arrow">→</span> <span data-k="nuevos_ult_mes" data-f="int">—</span></span>
-          <span class="kpi-foot"><span data-t="mes_primero">—</span> frente a <span data-t="mes_actual">—</span></span>
+          <span class="kpi-value" data-mode="total"><span data-k="nuevos_primer_mes" data-f="int">—</span> <span class="arrow">→</span> <span data-k="nuevos_ref_mes" data-f="int">—</span></span>
+          <span class="kpi-foot" data-mode="total"><span data-t="mes_primero">—</span> frente a <span data-t="mes_ref">—</span></span>
+          <span class="kpi-value" data-mode="mes mes0" hidden><span data-k="nuevos_periodo" data-f="int">—</span></span>
+          <span class="kpi-foot" data-mode="mes" hidden><span data-t="mes_anterior">—</span>: <span data-k="nuevos_mes_anterior" data-f="int">—</span></span>
+          <span class="kpi-foot" data-mode="mes0" hidden>Primer mes del período</span>
         </article>
         <article class="kpi">
           <span class="kpi-label">Anulaciones y notas de crédito</span>
@@ -264,7 +282,7 @@
       </div>
 
       <article class="card">
-        <header class="card-head"><div><h3>Clientes por frecuencia de visita</h3><p class="note">Clientes identificados con cédula o RUC. La barra compara su peso en clientes y en ventas.</p></div></header>
+        <header class="card-head"><div><h3>Clientes por frecuencia de visita</h3><p class="note">Clientes identificados, agrupados por sus visitas dentro del período elegido. La barra compara su peso en clientes y en ventas. "Sin visita en 60 días" solo aplica a todo el período.</p></div></header>
         <div class="table-box auto">
           <table class="tbl" id="tbl-cli">
             <thead><tr>
@@ -305,13 +323,13 @@
         <div class="ph-text">
           <span class="eyebrow">Maíz &amp; Yuca · Gestión comercial</span>
           <strong>Plan de acción comercial</strong>
-          <span class="ph-meta">Período analizado: <span data-src="periodo">—</span> · Emitido: <span data-src="emitido">—</span></span>
+          <span class="ph-meta">Base del plan: <b data-period>—</b> (<span data-src="periodo">—</span>) · Emitido: <span data-src="emitido">—</span></span>
         </div>
       </div>
 
       <div class="page-head page-head-tools">
         <div>
-          <h2>Plan de acción</h2>
+          <h2>Plan de acción <span class="period-chip" data-period>—</span></h2>
           <p class="lede">Acciones priorizadas a partir de los indicadores del período, con su impacto estimado y las metas de seguimiento semanal.</p>
         </div>
         <button type="button" class="btn-print" id="btn-print">
@@ -400,7 +418,7 @@
           <article class="rec">
             <span class="tag hi">Prioridad 1 · este mes</span>
             <h4>Hacer volver a los clientes</h4>
-            <p><b data-k="pct_clientes_una_visita" data-f="pct">—</b> de los clientes compró una sola vez, <b data-k="frecuentes_inactivos" data-f="int">—</b> frecuentes no vuelven hace 60 días y los clientes nuevos pasaron de <b data-k="nuevos_primer_mes" data-f="int">—</b> en <span data-t="mes_primero">—</span> a <b data-k="nuevos_ult_mes" data-f="int">—</b> en <span data-t="mes_actual">—</span>.</p>
+            <p><b data-k="pct_clientes_una_visita" data-f="pct">—</b> de los clientes compró una sola vez, <b data-k="frecuentes_inactivos" data-f="int">—</b> frecuentes no vuelven hace 60 días y los clientes nuevos pasaron de <b data-k="nuevos_primer_mes" data-f="int">—</b> en <span data-t="mes_primero">—</span> a <b data-k="nuevos_ref_mes" data-f="int">—</b> en <span data-t="mes_ref">—</span>.</p>
             <ul>
               <li>Contactar por WhatsApp a los frecuentes inactivos con una invitación personal (por ejemplo, café de cortesía).</li>
               <li>Tarjeta de sellos: a la sexta visita, un antojo gratis.</li>

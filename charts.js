@@ -62,7 +62,7 @@ window.CH = (() => {
     if (o.avg) {
       const a = d3.mean(data, o.y);
       svg.append('line').attr('x1', ml).attr('x2', w - mr).attr('y1', y(a)).attr('y2', y(a)).attr('stroke', c.gold).attr('stroke-width', 2).attr('stroke-dasharray', '6 4');
-      const lbl = 'Promedio ' + FMT.f(o.fmt, a);
+      const lbl = (o.avgLabel || 'Promedio') + ' ' + FMT.f(o.fmt, a);
       const lw = measure(svg, lbl, 12) + 12;
       svg.append('rect').attr('x', w - mr - lw).attr('y', y(a) - 22).attr('width', lw).attr('height', 18).attr('rx', 4).attr('fill', c.panel).attr('opacity', .9);
       svg.append('text').attr('x', w - mr - 6).attr('y', y(a) - 9).attr('text-anchor', 'end').attr('font-size', 12).attr('font-weight', 600).attr('fill', css('--gold-700')).text(lbl);
@@ -89,17 +89,21 @@ window.CH = (() => {
     svg.append('path').datum(data).attr('fill', 'none').attr('stroke', c.navy).attr('stroke-width', 2.25).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round')
       .attr('d', d3.line().x((d) => x(o.x(d))).y((d) => y(o.y(d))));
     const minV = ext[0];
+    const hl = o.highlight ? data.find(o.highlight) : null;
+    if (hl) svg.append('rect').attr('x', x(o.x(hl)) - 16).attr('y', 12).attr('width', 32).attr('height', h - 38).attr('rx', 6).attr('fill', c.gold).attr('opacity', .14);
     const pts = svg.append('g').selectAll('circle').data(data).join('circle').attr('cx', (d) => x(o.x(d))).attr('cy', (d) => y(o.y(d)))
-      .attr('r', (d) => (o.y(d) === minV ? 5.5 : 4)).attr('fill', (d) => (o.y(d) === minV ? c.bad : c.navy)).attr('stroke', c.panel).attr('stroke-width', 2);
+      .attr('r', (d) => (d === hl ? 6.5 : o.y(d) === minV ? 5.5 : 4)).attr('fill', (d) => (d === hl ? c.gold : o.y(d) === minV ? c.bad : c.navy)).attr('stroke', c.panel).attr('stroke-width', 2);
     if (o.tip) touch(pts, o.tip);
-    const last = data[data.length - 1];
-    svg.append('text').attr('x', x(o.x(last))).attr('y', y(o.y(last)) - 12).attr('text-anchor', 'middle').attr('font-size', 12).attr('font-weight', 700).attr('fill', o.y(last) === minV ? c.bad : c.navy).text(FMT.f(o.fmt, o.y(last)));
+    const last = hl || data[data.length - 1];
+    svg.append('text').attr('x', x(o.x(last))).attr('y', y(o.y(last)) - 12).attr('text-anchor', 'middle').attr('font-size', 12).attr('font-weight', 700)
+      .attr('fill', last === hl ? css('--gold-700') : o.y(last) === minV ? c.bad : c.navy).text(FMT.f(o.fmt, o.y(last)));
   }
 
   /* Barras horizontales */
   function hbars(el, data, o) {
     if (!data || !data.length) return empty(el);
     const c = COL(), h = o.height || Math.max(230, data.length * 34 + 10);
+    el.style.minHeight = h + 'px';
     const {svg, w} = setup(el, h);
     const ml = d3.max(data, (d) => measure(svg, o.y(d))) + 12, mr = measure(svg, FMT.f(o.fmt, d3.max(data, o.x))) + 14;
     const y = d3.scaleBand(data.map(o.y), [4, h - 4]).padding(0.28);

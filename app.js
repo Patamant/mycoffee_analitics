@@ -1,13 +1,17 @@
 /* Aplicación: carga de datos, pestañas, KPIs, lectura ejecutiva, tablas y botón Actualizar */
 (() => {
-  const S = {data: null, mode: null, tab: 'resumen', prod: {key: 'ventas', dir: -1, q: '', abc: ''}};
+  const S = {data: null, mode: null, tab: 'resumen', periodo: 'TOTAL', prod: {key: 'ventas', dir: -1, q: '', abc: ''}};
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-  const CACHE_KEY = 'finav_tablero_cache_v1';
+  const CACHE_KEY = 'finav_tablero_cache_v2';
+  const PERIOD_KEY = 'finav_tablero_periodo';
 
   /* ---------- utilidades ---------- */
-  const kpi = (k) => { const r = S.data && S.data.kpis.find((x) => x.indicador === k); return r ? Number(r.valor) : null; };
-  const txt = (k) => { const r = S.data && (S.data.textos || []).find((x) => x.indicador === k); return r ? String(r.valor) : ''; };
+  const V = () => (S.data && S.data.por_periodo && (S.data.por_periodo[S.periodo] || S.data.por_periodo.TOTAL)) || {};
+  const isMes = () => S.periodo !== 'TOTAL';
+  const periodoInfo = () => ((S.data && S.data.periodos) || []).find((p) => p.clave === S.periodo) || {};
+  const kpi = (k) => { const r = (V().kpis || []).find((x) => x.indicador === k); return r && r.valor !== '' && r.valor !== null ? Number(r.valor) : null; };
+  const txt = (k) => { const r = (V().textos || []).find((x) => x.indicador === k); return r && r.valor !== null ? String(r.valor) : ''; };
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
   const fmtDate = (s) => {
     if (!s) return '—';
@@ -23,7 +27,8 @@
   }
   function paintSource() {
     const f = S.data.fuente || {};
-    $('#sync-detail').textContent = `Período: ${fmtDate(f.fecha_inicio)} – ${fmtDate(f.fecha_corte)}`;
+    const pi = periodoInfo();
+    $('#sync-detail').textContent = isMes() ? `${pi.etiqueta}: ${fmtDate(pi.desde)} – ${fmtDate(pi.hasta)}` : `Período: ${fmtDate(f.fecha_inicio)} – ${fmtDate(f.fecha_corte)}`;
     $('#foot-source').textContent = `hoja "${f.hoja || '—'}" · ${FMT.f('int', f.filas_validas)} filas válidas · última actualización ${f.actualizado === 'demo' ? '(demostración)' : fmtDate(f.actualizado)}`;
     if (S.mode === 'demo') setStatus('demo', 'Datos de demostración');
     else setStatus('live', 'Google Sheets · ' + (f.actualizado ? fmtDate(f.actualizado) : 'conectado'));
@@ -50,14 +55,19 @@
       if (e.dataset.f === 'delta' && v !== null) { e.classList.toggle('up', v > 0.005); e.classList.toggle('down', v < -0.005); }
     });
     $$('[data-t]').forEach((e) => { e.textContent = txt(e.dataset.t) || '—'; });
+    const modo = !isMes() ? 'total' : (kpi('ventas_mes_anterior') === null ? 'mes0' : 'mes');
+    $$('[data-mode]').forEach((e) => { e.hidden = !e.dataset.mode.split(' ').includes(modo); });
+    $$('[data-period]').forEach((e) => { e.textContent = periodoInfo().etiqueta || 'Todo el período'; });
+    $$('.period-chip').forEach((e) => e.classList.toggle('is-month', isMes()));
   }
 
   function lede() {
     const p = $('#lede'); p.replaceChildren();
-    const parts = [
-      'El local vendió ', ['money0', kpi('ventas_netas')], ' en ', ['int', kpi('tickets')], ' tickets, un promedio de ', ['money0', kpi('prom_mensual')],
-      ' al mes. Sábado y domingo concentran ', ['pct', kpi('pct_finde')], ' de la venta y la mañana (antes de las 12h) ', ['pct', kpi('pct_manana')], '.'
-    ];
+    const parts = isMes()
+      ? ['En ', periodoInfo().etiqueta, ' el local vendió ', ['money0', kpi('ventas_netas')], ' en ', ['int', kpi('tickets')], ' tickets, ', ['money0', kpi('venta_dia')],
+        ' por día operado. Sábado y domingo concentraron ', ['pct', kpi('pct_finde')], ' de la venta y la mañana (antes de las 12h) ', ['pct', kpi('pct_manana')], '.']
+      : ['El local vendió ', ['money0', kpi('ventas_netas')], ' en ', ['int', kpi('tickets')], ' tickets, un promedio de ', ['money0', kpi('prom_mensual')],
+        ' al mes. Sábado y domingo concentran ', ['pct', kpi('pct_finde')], ' de la venta y la mañana (antes de las 12h) ', ['pct', kpi('pct_manana')], '.'];
     parts.forEach((x) => p.append(Array.isArray(x) ? el('b', '', FMT.f(x[0], x[1])) : x));
   }
 
@@ -72,11 +82,24 @@
     const lj = kpi('venta_dia_lun_jue'), sd = kpi('venta_dia_sab_dom');
     if (lj && sd) add(['De lunes a jueves se vende ', ['money0', lj], ' por día, frente a ', ['money0', sd], ' en fin de semana: los días de semana son la mayor capacidad ociosa.'], lj / sd < 0.5);
     add(['Solo ', ['pct', kpi('pct_tickets_bebida')], ' de los tickets lleva bebida; con bebida el ticket sube de ', ['money', kpi('ticket_sin_bebida')], ' a ', ['money', kpi('ticket_con_bebida')], '.']);
-    add([['pct', kpi('pct_clientes_una_visita')], ' de los clientes vino una sola vez y ', ['int', kpi('frecuentes_inactivos')], ' frecuentes no vuelven hace 60 días. Clientes nuevos: ', ['int', kpi('nuevos_primer_mes')], ' en ', [txt('mes_primero')], ' y ', ['int', kpi('nuevos_ult_mes')], ' en ', [txt('mes_actual')], '.'], kpi('nuevos_ult_mes') < kpi('nuevos_primer_mes'));
+    if (isMes()) {
+      const na = kpi('nuevos_mes_anterior');
+      const parts = [['int', kpi('nuevos_periodo')], ' clientes nuevos en el mes'];
+      if (na !== null) parts.push(' frente a ', ['int', na], ' en ', [txt('mes_anterior')]);
+      parts.push('. Al cierre, ', ['int', kpi('frecuentes_inactivos')], ' clientes frecuentes llevaban más de 60 días sin volver.');
+      add(parts, na !== null && kpi('nuevos_periodo') < na);
+    } else {
+      add([['pct', kpi('pct_clientes_una_visita')], ' de los clientes vino una sola vez y ', ['int', kpi('frecuentes_inactivos')], ' frecuentes no vuelven hace 60 días. Clientes nuevos: ', ['int', kpi('nuevos_primer_mes')], ' en ', [txt('mes_primero')], ' y ', ['int', kpi('nuevos_ref_mes')], ' en ', [txt('mes_ref')], '.'], kpi('nuevos_ref_mes') < kpi('nuevos_primer_mes'));
+    }
     add(['Desde las 13h entra apenas ', ['pct', kpi('pct_tarde')], ' de la venta: definir una oferta de tarde o ajustar turnos.']);
     add([['int', kpi('productos_A')], ' de ', ['int', kpi('productos')], ' productos hacen el 80% de la venta y ', ['int', kpi('productos_multiprecio')], ' productos se cobraron a 3 o más precios.']);
-    const d = kpi('delta_ult_mes');
-    add([[txt('mes_actual')], ' vendió ', ['money0', kpi('ventas_ult_mes')], ' (', ['delta', d], ' frente al promedio) con ticket de ', ['money', kpi('ticket_ult_mes')], '.'], d < 0);
+    const d = kpi('delta_ref_vs_prom');
+    if (isMes() && kpi('delta_vs_anterior') !== null) {
+      const da = kpi('delta_vs_anterior');
+      add([[txt('mes_ref')], ' vendió ', ['money0', kpi('ventas_netas')], ' (', ['delta', da], ' frente a ', [txt('mes_anterior')], ' y ', ['delta', d], ' frente al promedio mensual) con ticket de ', ['money', kpi('ticket_prom')], '.'], da < 0);
+    } else {
+      add([[txt('mes_ref')], ' vendió ', ['money0', kpi('ventas_ref_mes')], ' (', ['delta', d], ' frente al promedio mensual) con ticket de ', ['money', kpi('ticket_ref_mes')], '.'], d < 0);
+    }
   }
 
   /* ---------- gráficos por pestaña ---------- */
@@ -84,24 +107,35 @@
   const draw = {
     resumen() {
       const m = (S.data.mensual || []).slice().sort((a, b) => a.orden - b.orden);
-      CH.bars($('#ch-mes'), m, {x: (d) => d.mes, y: (d) => +d.ventas, fmt: 'money0', avg: true, height: 280, tip: mesTip,
-        color: (d, c) => (+d.orden === m.length ? c.navy400 : c.navy)});
-      CH.line($('#ch-ticket'), m, {x: (d) => d.mes, y: (d) => +d.ticket_prom, fmt: 'money', tip: mesTip});
-      CH.bars($('#ch-nuevos'), m, {x: (d) => d.mes, y: (d) => +d.clientes_nuevos, fmt: 'int', labels: true, tip: mesTip, color: (d, c) => c.gold});
+      const sel = (d) => d.clave === S.periodo;
+      if (isMes()) {
+        const dd = (V().diario || []).slice().sort((a, b) => a.orden - b.orden);
+        CH.bars($('#ch-mes'), dd, {x: (d) => String(d.dia).slice(8, 10), xFmt: (v) => String(+v), y: (d) => +d.ventas, fmt: 'money0', avg: true, avgLabel: 'Promedio diario', height: 280,
+          color: (d, c) => (d.fin_de_semana === 'Sí' ? c.navy400 : c.navy),
+          tip: (d) => [`${d.dia_semana} ${fmtDate(d.dia).replace(/ \d{4}$/, '')}`, 'Ventas ' + FMT.f('money0', d.ventas), 'Tickets ' + FMT.f('int', d.tickets), 'Ticket prom. ' + FMT.f('money', d.ticket_prom)]});
+      } else {
+        CH.bars($('#ch-mes'), m, {x: (d) => d.mes, y: (d) => +d.ventas, fmt: 'money0', avg: true, height: 280, tip: mesTip,
+          color: (d, c) => (+d.orden === m.length ? c.navy400 : c.navy)});
+      }
+      CH.line($('#ch-ticket'), m, {x: (d) => d.mes, y: (d) => +d.ticket_prom, fmt: 'money', tip: mesTip, highlight: isMes() ? sel : null});
+      CH.bars($('#ch-nuevos'), m, {x: (d) => d.mes, y: (d) => +d.clientes_nuevos, fmt: 'int', labels: true, tip: mesTip,
+        color: (d, c) => (!isMes() || sel(d) ? c.gold : c.muted)});
     },
     cuando() {
-      CH.heatmap($('#ch-heat'), S.data.diaHora);
-      const dw = (S.data.diaSemana || []).slice().sort((a, b) => a.orden - b.orden);
+      CH.heatmap($('#ch-heat'), V().diaHora);
+      const dw = (V().diaSemana || []).slice().sort((a, b) => a.orden - b.orden);
       CH.hbars($('#ch-dow'), dw, {y: (d) => d.dia, x: (d) => +d.venta_dia, fmt: 'money0', height: 260, color: (d, c) => (+d.orden >= 6 ? c.gold : c.navy),
         tip: (d) => [d.dia, 'Venta por día ' + FMT.f('money0', d.venta_dia), 'Tickets por día ' + FMT.f('dec1', d.tickets_dia), 'Ticket prom. ' + FMT.f('money', d.ticket_prom), 'Participación ' + FMT.f('pct', d.participacion)]});
-      const ho = (S.data.hora || []).slice().sort((a, b) => a.hora - b.hora);
+      const ho = (V().hora || []).slice().sort((a, b) => a.hora - b.hora);
       CH.bars($('#ch-hora'), ho, {x: (d) => +d.hora, xFmt: (v) => v + 'h', y: (d) => +d.participacion, fmt: 'pct', height: 260,
         color: (d, c) => (+d.hora >= 8 && +d.hora <= 11 ? c.navy : c.muted),
         tip: (d) => [`${d.hora}:00–${d.hora}:59`, 'Participación ' + FMT.f('pct', d.participacion), 'Ventas ' + FMT.f('money0', d.ventas), 'Tickets ' + FMT.f('int', d.tickets), 'Ticket prom. ' + FMT.f('money', d.ticket_prom)]});
     },
     que() {
-      const rows = (S.data.lineas || []).map((r) => ({l: r.linea, a: +r.prom_previo || 0, b: +r.prom_reciente || 0, share: +r.participacion})).filter((d) => d.a + d.b > 0);
-      CH.dumbbell($('#ch-lineas'), rows, {pa: txt('periodo_previo') || 'Antes', pb: txt('periodo_reciente') || 'Reciente'});
+      const rows = (V().lineas || []).map((r) => ({l: r.linea, a: +r.prom_previo || 0, b: +r.prom_reciente || 0, share: +r.participacion})).filter((d) => d.a + d.b > 0);
+      if (txt('periodo_previo')) CH.dumbbell($('#ch-lineas'), rows, {pa: txt('periodo_previo'), pb: txt('periodo_reciente')});
+      else CH.hbars($('#ch-lineas'), (V().lineas || []).map((r) => ({l: FMT.title(r.linea), v: +r.ventas, r})), {y: (d) => d.l, x: (d) => d.v, fmt: 'money0',
+        tip: (d) => [d.l, 'Ventas ' + FMT.f('money0', d.v), 'Participación ' + FMT.f('pct', d.r.participacion)]});
       prodTable();
     },
     clientes() { cliTable(); usuTable(); anuTable(); },
@@ -113,7 +147,7 @@
 
   function prodRows() {
     const P = S.prod;
-    let rows = (S.data.productos || []).slice();
+    let rows = (V().productos || []).slice();
     if (P.abc) rows = rows.filter((r) => r.abc === P.abc);
     if (P.q) rows = rows.filter((r) => (r.producto + ' ' + r.linea).toLowerCase().includes(P.q));
     const num = !['producto', 'linea', 'abc'].includes(P.key);
@@ -143,12 +177,12 @@
     });
     tb.appendChild(frag);
     const total = rows.reduce((s, r) => s + Number(r.ventas), 0);
-    $('#prod-count').textContent = `${FMT.f('int', rows.length)} de ${FMT.f('int', (S.data.productos || []).length)} productos · ventas ${FMT.f('money0', total)}`;
+    $('#prod-count').textContent = `${FMT.f('int', rows.length)} de ${FMT.f('int', (V().productos || []).length)} productos · ventas ${FMT.f('money0', total)}`;
     $$('#tbl-prod th[data-sort]').forEach((th) => th.setAttribute('aria-sort', th.dataset.sort === S.prod.key ? (S.prod.dir > 0 ? 'ascending' : 'descending') : 'none'));
   }
   function cliTable() {
     const tb = $('#tbl-cli tbody'); tb.replaceChildren();
-    const rows = (S.data.clientes || []).slice().sort((a, b) => a.orden - b.orden);
+    const rows = (V().clientes || []).slice().sort((a, b) => a.orden - b.orden);
     const totV = rows.reduce((s, r) => s + Number(r.ventas), 0) || 1;
     rows.forEach((r) => {
       const tr = el('tr');
@@ -168,7 +202,7 @@
   }
   function usuTable() {
     const tb = $('#tbl-usu tbody'); tb.replaceChildren();
-    const rows = S.data.usuarios || [];
+    const rows = V().usuarios || [];
     const maxB = Math.max(...rows.map((r) => +r.pct_con_bebida));
     rows.forEach((r) => {
       const tr = el('tr');
@@ -180,7 +214,7 @@
   }
   function anuTable() {
     const tb = $('#tbl-anu tbody'); tb.replaceChildren();
-    (S.data.anulaciones || []).forEach((r) => {
+    (V().anulaciones || []).forEach((r) => {
       const tr = el('tr');
       td(tr, r.motivo, r.motivo === 'Pruebas del sistema' ? 'strong warn-cell' : 'strong'); td(tr, FMT.f('money', r.valor), 'num'); td(tr, FMT.f('int', r.documentos), 'num');
       tb.appendChild(tr);
@@ -194,7 +228,7 @@
     const csv = '﻿' + [cols.join(';')].concat(rows.map((r) => cols.map((c) => esc(r[c])).join(';'))).join('\n');
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8'}));
-    a.download = 'productos_maiz_yuca.csv';
+    a.download = 'productos_maiz_yuca_' + (isMes() ? S.periodo.slice(1) : 'total') + '.csv';
     document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   }
 
@@ -234,7 +268,8 @@
     $('#plan-pct').textContent = FMT.f('pct', P.total / (kpi('prom_mensual') || 1));
     $('#plan-anual').textContent = FMT.f('money0', P.total * 12);
     const f = S.data.fuente || {};
-    $$('[data-src="periodo"]').forEach((e) => { e.textContent = fmtDate(f.fecha_inicio) + ' – ' + fmtDate(f.fecha_corte); });
+    const pi = periodoInfo();
+    $$('[data-src="periodo"]').forEach((e) => { e.textContent = isMes() ? fmtDate(pi.desde) + ' – ' + fmtDate(pi.hasta) : fmtDate(f.fecha_inicio) + ' – ' + fmtDate(f.fecha_corte); });
     $$('[data-src="emitido"]').forEach((e) => { e.textContent = new Date().toLocaleDateString(FINAV_CONFIG.LOCALE, {day: 'numeric', month: 'long', year: 'numeric'}); });
 
     // seguimiento semanal: línea base y meta derivada de los supuestos
@@ -245,7 +280,7 @@
       ['Ticket promedio', 'money', b('ticket_prom'), b('ticket_prom') + (b('tickets_sin_bebida') * s.conv * s.precio) / Math.max(1, b('tickets'))],
       ['Venta mensual desde las 13h', 'money0', b('pct_tarde') * b('ventas_netas') / Math.max(1, b('meses')), b('pct_tarde') * b('ventas_netas') / Math.max(1, b('meses')) * (1 + s.tarde)],
       ['Frecuentes inactivos recuperados', 'int', 0, b('frecuentes_inactivos') * s.retorno],
-      ['Clientes nuevos por mes', 'int', b('nuevos_ult_mes'), Math.max(b('nuevos_ult_mes'), b('nuevos_primer_mes'))],
+      ['Clientes nuevos por mes', 'int', b('nuevos_ref_mes'), Math.max(b('nuevos_ref_mes'), b('nuevos_primer_mes'))],
       ['% de tickets a consumidor final', 'pct', b('pct_consumidor_final'), Math.max(0, b('pct_consumidor_final') - 0.10)],
       ['Anulaciones por pruebas del sistema', 'money0', b('anulado_pruebas'), 0]
     ];
@@ -261,9 +296,36 @@
   /* ---------- render ---------- */
   function renderAll() {
     if (!S.data) return;
-    paintSource(); paintValues(); lede(); insights();
+    if (!S.data.por_periodo) { setStatus('error', 'Formato antiguo'); toast('La API devolvió un formato anterior. Actualice los archivos .gs y cree una nueva versión de la implementación.', 'error'); return; }
+    fillPeriods(); paintSource(); paintValues(); lede(); insights();
     draw[S.tab]();
   }
+
+  /* ---------- selector de período ---------- */
+  function fillPeriods() {
+    const sel = $('#periodo');
+    const ps = (S.data.periodos || []).slice().sort((a, b) => a.orden - b.orden);
+    if (!ps.some((p) => p.clave === S.periodo)) S.periodo = 'TOTAL';
+    sel.replaceChildren(...ps.map((p) => { const o = new Option(p.clave === 'TOTAL' ? 'Todo el período' : p.etiqueta, p.clave); return o; }));
+    sel.value = S.periodo;
+    const i = ps.findIndex((p) => p.clave === S.periodo);
+    $('#per-prev').disabled = i <= 0;
+    $('#per-next').disabled = i >= ps.length - 1;
+  }
+  function setPeriodo(clave) {
+    S.periodo = clave;
+    try { sessionStorage.setItem(PERIOD_KEY, clave); } catch (e) { /* sin almacenamiento */ }
+    renderAll();
+  }
+  $('#periodo').addEventListener('change', (e) => setPeriodo(e.target.value));
+  const stepPeriodo = (d) => {
+    const ps = (S.data.periodos || []).slice().sort((a, b) => a.orden - b.orden);
+    const i = ps.findIndex((p) => p.clave === S.periodo) + d;
+    if (ps[i]) setPeriodo(ps[i].clave);
+  };
+  $('#per-prev').addEventListener('click', () => stepPeriodo(-1));
+  $('#per-next').addEventListener('click', () => stepPeriodo(1));
+  try { const sp = sessionStorage.getItem(PERIOD_KEY); if (sp) S.periodo = sp; } catch (e) { /* sin almacenamiento */ }
 
   /* ---------- pestañas ---------- */
   function showTab(name, focus) {
